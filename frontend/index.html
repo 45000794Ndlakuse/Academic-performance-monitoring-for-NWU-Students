@@ -1,0 +1,1429 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PSR · Academic Performance Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0d0f14;
+    --surface: #13161d;
+    --surface2: #1a1e28;
+    --surface3: #20253200;
+    --border: rgba(255,255,255,0.07);
+    --border2: rgba(231, 14, 14, 0.12);
+    --text: #e8eaf0;
+    --text2: #8b90a0;
+    --text3: #555a6b;
+    --accent: #6c63ff;
+    --accent2: #8b84ff;
+    --teal: #00d4aa;
+    --amber: #f59e0b;
+    --coral: #ff6b6b;
+    --green: #22c55e;
+    --blue: #3b82f6;
+    --glow: rgba(108,99,255,0.15);
+    --r: 12px;
+    --r-sm: 8px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    font-size: 14px;
+    line-height: 1.6;
+  }
+
+  /* ── Layout ── */
+  .shell { display: flex; min-height: 100vh; }
+
+  /* ── Sidebar ── */
+  .sidebar {
+    width: 240px;
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    top: 0; left: 0; bottom: 0;
+    z-index: 100;
+    overflow-y: auto;
+  }
+
+  .sidebar-logo {
+    padding: 24px 20px 20px;
+    border-bottom: 1px solid var(--border);
+  }
+  .logo-mark {
+    font-family: 'Syne', sans-serif;
+    font-size: 22px;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    color: var(--text);
+  }
+  .logo-mark span { color: var(--accent2); }
+  .logo-sub { font-size: 11px; color: var(--text3); letter-spacing: 0.5px; margin-top: 2px; }
+
+  .nav-section { padding: 16px 12px 8px; }
+  .nav-label { font-size: 10px; letter-spacing: 1.2px; color: var(--text3); text-transform: uppercase; padding: 0 8px; margin-bottom: 6px; }
+
+  .nav-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 8px 10px;
+    border-radius: var(--r-sm);
+    cursor: pointer;
+    color: var(--text2);
+    font-size: 13.5px;
+    transition: all 0.15s;
+    user-select: none;
+  }
+  .nav-item:hover { background: var(--surface2); color: var(--text); }
+  .nav-item.active { background: var(--glow); color: var(--accent2); }
+  .nav-item .icon { width: 16px; height: 16px; opacity: 0.7; flex-shrink: 0; }
+  .nav-item.active .icon { opacity: 1; }
+
+  .module-list { padding: 8px 12px; flex: 1; }
+  .module-chip {
+    padding: 7px 10px;
+    border-radius: var(--r-sm);
+    cursor: pointer;
+    font-size: 12.5px;
+    color: var(--text2);
+    transition: all 0.15s;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .module-chip:hover { background: var(--surface2); color: var(--text); }
+  .module-chip.active { color: var(--teal); }
+  .module-chip .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--teal); flex-shrink: 0; }
+
+  /* ── Main ── */
+  .main { margin-left: 240px; flex: 1; }
+
+  /* ── Topbar ── */
+  .topbar {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 0 28px;
+    height: 58px;
+    display: flex; align-items: center; justify-content: space-between;
+    position: sticky; top: 0; z-index: 50;
+  }
+  .topbar-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text);
+  }
+  .topbar-actions { display: flex; gap: 10px; align-items: center; }
+
+  /* ── Buttons ── */
+  .btn {
+    padding: 7px 16px;
+    border-radius: var(--r-sm);
+    border: 1px solid var(--border2);
+    background: transparent;
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.15s;
+    display: inline-flex; align-items: center; gap: 6px;
+  }
+  .btn:hover { background: var(--surface2); border-color: var(--border2); }
+  .btn-primary {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #fff;
+    font-weight: 500;
+  }
+  .btn-primary:hover { background: var(--accent2); border-color: var(--accent2); }
+  .btn-sm { padding: 5px 12px; font-size: 12px; }
+  .btn-teal { border-color: var(--teal); color: var(--teal); }
+  .btn-teal:hover { background: rgba(0,212,170,0.08); }
+
+  /* ── Page sections ── */
+  .page { display: none; padding: 28px; }
+  .page.active { display: block; }
+
+  /* ── Cards ── */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--r);
+    padding: 20px;
+  }
+  .card-header {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 16px;
+  }
+  .card-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text);
+    letter-spacing: -0.2px;
+  }
+
+  /* ── Stat cards ── */
+  .stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 24px; }
+  .stat-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--r);
+    padding: 18px;
+    position: relative;
+    overflow: hidden;
+  }
+  .stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+  }
+  .stat-card.blue::before { background: var(--accent); }
+  .stat-card.teal::before { background: var(--teal); }
+  .stat-card.amber::before { background: var(--amber); }
+  .stat-card.coral::before { background: var(--coral); }
+  .stat-label { font-size: 11px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 8px; }
+  .stat-value { font-family: 'Syne', sans-serif; font-size: 28px; font-weight: 700; color: var(--text); }
+  .stat-sub { font-size: 11px; color: var(--text3); margin-top: 4px; }
+
+  /* ── Table ── */
+  .table-wrap { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; }
+  thead th {
+    font-size: 11px;
+    color: var(--text3);
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    padding: 10px 14px;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+    white-space: nowrap;
+  }
+  tbody tr {
+    border-bottom: 1px solid var(--border);
+    cursor: pointer;
+    transition: background 0.1s;
+  }
+  tbody tr:hover { background: var(--surface2); }
+  tbody tr:last-child { border-bottom: none; }
+  td {
+    padding: 11px 14px;
+    font-size: 13.5px;
+    color: var(--text);
+    vertical-align: middle;
+  }
+
+  /* ── Rank badge ── */
+  .rank-badge {
+    width: 28px; height: 28px;
+    border-radius: 8px;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-family: 'Syne', sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+  .rank-1 { background: rgba(245,158,11,0.15); color: var(--amber); border: 1px solid rgba(245,158,11,0.3); }
+  .rank-2 { background: rgba(148,163,184,0.1); color: #94a3b8; border: 1px solid rgba(148,163,184,0.2); }
+  .rank-3 { background: rgba(180,120,80,0.12); color: #cd9a6a; border: 1px solid rgba(180,120,80,0.25); }
+  .rank-n { background: var(--surface2); color: var(--text2); border: 1px solid var(--border); }
+
+  /* ── Progress bar ── */
+  .progress-track {
+    width: 100%;
+    height: 5px;
+    background: var(--surface2);
+    border-radius: 10px;
+    overflow: hidden;
+    margin-top: 4px;
+  }
+  .progress-fill {
+    height: 100%;
+    border-radius: 10px;
+    transition: width 0.6s cubic-bezier(0.34,1.56,0.64,1);
+  }
+
+  /* ── Tier badges ── */
+  .tier {
+    padding: 3px 9px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.2px;
+    display: inline-block;
+  }
+  .tier-distinction { background: rgba(34,197,94,0.12); color: var(--green); border: 1px solid rgba(34,197,94,0.2); }
+  .tier-good { background: rgba(59,130,246,0.12); color: var(--blue); border: 1px solid rgba(59,130,246,0.2); }
+  .tier-satisfactory { background: rgba(108,99,255,0.12); color: var(--accent2); border: 1px solid rgba(108,99,255,0.2); }
+  .tier-at_risk { background: rgba(245,158,11,0.12); color: var(--amber); border: 1px solid rgba(245,158,11,0.2); }
+  .tier-critical { background: rgba(255,107,107,0.12); color: var(--coral); border: 1px solid rgba(255,107,107,0.2); }
+
+  /* ── DEA class ── */
+  .dea-chip {
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-family: 'Syne', sans-serif;
+    font-weight: 600;
+    background: var(--surface2);
+    color: var(--text2);
+  }
+  .dea-1 { background: rgba(0,212,170,0.12); color: var(--teal); }
+  .dea-2 { background: rgba(59,130,246,0.1); color: var(--blue); }
+  .dea-3 { background: rgba(108,99,255,0.1); color: var(--accent2); }
+
+  /* ── Student detail panel ── */
+  .detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  .detail-grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; }
+
+  /* ── Knowledge graph ── */
+  .kg-wrap { position: relative; }
+  .kg-canvas { width: 100%; height: 340px; display: block; }
+
+  /* ── Factor bars ── */
+  .factor-list { display: flex; flex-direction: column; gap: 14px; }
+  .factor-row { }
+  .factor-meta { display: flex; justify-content: space-between; margin-bottom: 5px; }
+  .factor-name { font-size: 13px; color: var(--text); }
+  .factor-score { font-family: 'Syne', sans-serif; font-size: 13px; font-weight: 600; }
+
+  /* ── Improvement table ── */
+  .scenario-card {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--r-sm);
+    padding: 14px;
+    margin-bottom: 8px;
+  }
+  .scenario-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+  .scenario-title { font-family: 'Syne', sans-serif; font-size: 12px; font-weight: 700; color: var(--text2); }
+  .scenario-delta {
+    font-family: 'Syne', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--teal);
+  }
+  .scenario-delta.negative { color: var(--coral); }
+  .scenario-factors { display: flex; gap: 10px; flex-wrap: wrap; }
+  .factor-pill {
+    font-size: 11px;
+    padding: 4px 10px;
+    border-radius: 20px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text2);
+  }
+  .factor-pill.required { border-color: rgba(108,99,255,0.3); color: var(--accent2); background: rgba(108,99,255,0.08); }
+
+  /* ── Weight display ── */
+  .weight-bars { display: flex; gap: 10px; align-items: flex-end; height: 80px; }
+  .weight-bar-wrap { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 6px; }
+  .weight-bar-fill {
+    width: 100%;
+    background: var(--accent);
+    border-radius: 4px 4px 0 0;
+    transition: height 0.5s ease;
+    min-height: 4px;
+  }
+  .weight-bar-label { font-size: 10px; color: var(--text3); text-align: center; }
+  .weight-bar-val { font-size: 11px; font-family: 'Syne', sans-serif; font-weight: 600; color: var(--accent2); }
+
+  /* ── Radar chart ── */
+  .radar-wrap { display: flex; align-items: center; justify-content: center; padding: 10px 0; }
+
+  /* ── Forms ── */
+  .form-group { margin-bottom: 16px; }
+  .form-label { display: block; font-size: 12px; color: var(--text2); margin-bottom: 6px; letter-spacing: 0.3px; }
+  .form-input {
+    width: 100%;
+    background: var(--surface2);
+    border: 1px solid var(--border2);
+    border-radius: var(--r-sm);
+    padding: 9px 12px;
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13.5px;
+    outline: none;
+    transition: border-color 0.15s;
+  }
+  .form-input:focus { border-color: var(--accent); }
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+
+  /* ── Modal ── */
+  .modal-overlay {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.7);
+    display: none; align-items: center; justify-content: center;
+    z-index: 1000;
+    backdrop-filter: blur(4px);
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: var(--surface);
+    border: 1px solid var(--border2);
+    border-radius: 16px;
+    padding: 28px;
+    width: 540px;
+    max-height: 80vh;
+    overflow-y: auto;
+    box-shadow: 0 24px 80px rgba(0,0,0,0.5);
+  }
+  .modal-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 17px;
+    font-weight: 700;
+    margin-bottom: 20px;
+    color: var(--text);
+  }
+  .modal-footer { display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px; }
+
+  /* ── Loading ── */
+  .spinner {
+    width: 20px; height: 20px;
+    border: 2px solid var(--border2);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.6s linear infinite;
+    display: inline-block;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .loading-state {
+    display: flex; align-items: center; justify-content: center;
+    gap: 12px; padding: 60px; color: var(--text2);
+  }
+
+  /* ── Empty state ── */
+  .empty-state {
+    text-align: center; padding: 60px 20px; color: var(--text3);
+  }
+  .empty-state h3 { font-family: 'Syne', sans-serif; font-size: 16px; color: var(--text2); margin-bottom: 8px; }
+
+  /* ── Tabs ── */
+  .tabs { display: flex; gap: 2px; background: var(--surface2); border-radius: var(--r-sm); padding: 3px; margin-bottom: 20px; }
+  .tab {
+    flex: 1; padding: 7px; text-align: center;
+    border-radius: 6px; cursor: pointer;
+    font-size: 12.5px; color: var(--text3);
+    transition: all 0.15s;
+  }
+  .tab.active { background: var(--surface); color: var(--text); font-weight: 500; }
+
+  /* ── Tooltip ── */
+  .tooltip-wrap { position: relative; display: inline-block; }
+  .tooltip {
+    position: absolute; bottom: calc(100% + 6px); left: 50%;
+    transform: translateX(-50%);
+    background: var(--surface2);
+    border: 1px solid var(--border2);
+    border-radius: 6px;
+    padding: 6px 10px;
+    font-size: 11px;
+    color: var(--text);
+    white-space: nowrap;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.15s;
+    z-index: 10;
+  }
+  .tooltip-wrap:hover .tooltip { opacity: 1; }
+
+  /* ── Range slider ── */
+  input[type=range] {
+    -webkit-appearance: none;
+    width: 100%; height: 4px;
+    background: var(--surface2);
+    border-radius: 10px;
+    outline: none;
+  }
+  input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 16px; height: 16px;
+    border-radius: 50%;
+    background: var(--accent);
+    cursor: pointer;
+  }
+
+  /* ── Scrollbar ── */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--surface2); border-radius: 10px; }
+
+  /* ── Animations ── */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .fade-up { animation: fadeUp 0.3s ease forwards; }
+
+  .notif {
+    position: fixed; bottom: 24px; right: 24px;
+    background: var(--surface2);
+    border: 1px solid var(--border2);
+    border-radius: var(--r);
+    padding: 12px 18px;
+    font-size: 13px;
+    color: var(--text);
+    z-index: 9999;
+    transform: translateY(80px);
+    opacity: 0;
+    transition: all 0.3s;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+  }
+  .notif.show { transform: translateY(0); opacity: 1; }
+  .notif.success { border-color: rgba(34,197,94,0.3); }
+  .notif.error { border-color: rgba(255,107,107,0.3); }
+</style>
+</head>
+<body>
+
+<div class="shell">
+  <!-- ── Sidebar ── -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-mark">PSR<span>·</span>Analytics</div>
+      <div class="logo-sub">Performance Status Reports</div>
+    </div>
+
+    <nav class="nav-section">
+      <div class="nav-label">Navigation</div>
+      <div class="nav-item active" data-page="dashboard" onclick="showPage('dashboard')">
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+        Dashboard
+      </div>
+      <div class="nav-item" data-page="students" onclick="showPage('students')">
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        Students
+      </div>
+      <div class="nav-item" data-page="lecturer" onclick="showPage('lecturer')">
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+        Lecturer Tools
+      </div>
+    </nav>
+
+    <div class="module-list">
+      <div class="nav-label" style="padding: 0 8px; margin-bottom: 8px;">Modules</div>
+      <div id="sidebar-modules">
+        <div style="font-size:12px;color:var(--text3);padding:8px;">Loading...</div>
+      </div>
+    </div>
+
+    <div style="padding: 14px 12px; border-top: 1px solid var(--border);">
+      <div class="btn btn-sm" style="width:100%;justify-content:center;" onclick="openAddModule()">
+        + New Module
+      </div>
+    </div>
+  </aside>
+
+  <!-- ── Main area ── -->
+  <main class="main">
+    <!-- Topbar -->
+    <div class="topbar">
+      <div class="topbar-title" id="page-title">Dashboard</div>
+      <div class="topbar-actions">
+        <div id="topbar-module-name" style="font-size:12px;color:var(--text3);"></div>
+        <button class="btn btn-sm" onclick="openAddStudent()">+ Add Student</button>
+        <button class="btn btn-primary btn-sm" onclick="runAnalysis()">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+          Run PSR
+        </button>
+      </div>
+    </div>
+
+    <!-- Dashboard page -->
+    <div class="page active" id="page-dashboard">
+      <div class="stats-row" id="stats-row">
+        <div class="stat-card blue">
+          <div class="stat-label">Students</div>
+          <div class="stat-value" id="stat-total">—</div>
+          <div class="stat-sub">Enrolled in module</div>
+        </div>
+        <div class="stat-card teal">
+          <div class="stat-label">Class Average</div>
+          <div class="stat-value" id="stat-avg">—</div>
+          <div class="stat-sub">p-mark average %</div>
+        </div>
+        <div class="stat-card amber">
+          <div class="stat-label">Pass Rate</div>
+          <div class="stat-value" id="stat-pass">—</div>
+          <div class="stat-sub">Above 50%</div>
+        </div>
+        <div class="stat-card coral">
+          <div class="stat-label">At Risk</div>
+          <div class="stat-value" id="stat-risk">—</div>
+          <div class="stat-sub">Below 50%</div>
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 360px;gap:20px;">
+        <!-- Ranking table -->
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">Student Rankings</span>
+            <span style="font-size:11px;color:var(--text3);">Algorithm 1 · Linear LP</span>
+          </div>
+          <div class="table-wrap">
+            <table id="ranking-table">
+              <thead>
+                <tr>
+                  <th>Rank</th>
+                  <th>Student</th>
+                  <th>Min p-mark</th>
+                  <th>Max p-mark</th>
+                  <th>Avg p-mark</th>
+                  <th>DEA Class</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody id="ranking-body">
+                <tr><td colspan="7"><div class="loading-state"><div class="spinner"></div> Loading PSR data...</div></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Distribution chart -->
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">Distribution</span>
+          </div>
+          <canvas id="dist-chart" height="260"></canvas>
+          <div id="dist-legend" style="margin-top:12px;display:flex;flex-wrap:wrap;gap:8px;"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Students page -->
+    <div class="page" id="page-students">
+      <div id="student-list-view">
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">All Students</span>
+            <input class="form-input" style="width:200px;" placeholder="Search..." id="student-search" oninput="filterStudents(this.value)">
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr>
+                <th>Student #</th><th>Name</th><th>F1</th><th>F2</th><th>F3</th><th>F4</th><th>Avg p-mark</th><th>Rank</th><th></th>
+              </tr></thead>
+              <tbody id="student-table-body"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Student detail -->
+      <div id="student-detail-view" style="display:none;">
+        <div style="margin-bottom:16px;">
+          <button class="btn btn-sm" onclick="closeStudentDetail()">← Back to list</button>
+        </div>
+        <div id="student-detail-content"></div>
+      </div>
+    </div>
+
+    <!-- Lecturer tools page -->
+    <div class="page" id="page-lecturer">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">Weight Selection</span>
+            <span style="font-size:11px;color:var(--text3);">Algorithm 3 · SLSQP</span>
+          </div>
+          <p style="font-size:13px;color:var(--text2);margin-bottom:18px;">Find the optimal factor weights to reach a target class average.</p>
+          <div class="form-group">
+            <label class="form-label">Target Class Average (%)</label>
+            <div style="display:flex;align-items:center;gap:14px;">
+              <input type="range" min="40" max="90" value="70" step="1" id="target-slider"
+                     oninput="document.getElementById('target-val').textContent=this.value+'%'">
+              <span id="target-val" style="font-family:'Syne',sans-serif;font-weight:700;color:var(--accent2);min-width:40px;">70%</span>
+            </div>
+          </div>
+          <button class="btn btn-primary" onclick="runWeightSelection()">Calculate Weights</button>
+          <div id="weight-result" style="margin-top:20px;display:none;">
+            <div style="font-size:12px;color:var(--text3);margin-bottom:12px;">Recommended factor weights:</div>
+            <div class="weight-bars" id="weight-bars"></div>
+            <div id="weight-achieved" style="margin-top:14px;font-size:13px;color:var(--text2);"></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">DEA Class Overview</span>
+            <span style="font-size:11px;color:var(--text3);">Pareto efficiency</span>
+          </div>
+          <canvas id="dea-chart" height="220"></canvas>
+          <div id="dea-legend" style="margin-top:10px;"></div>
+        </div>
+      </div>
+
+      <div style="margin-top:20px;">
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">Factor Mastery Insight</span>
+            <span style="font-size:11px;color:var(--text3);">Class performance per factor</span>
+          </div>
+          <canvas id="factor-chart" height="180"></canvas>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- Modals -->
+<div class="modal-overlay" id="modal-add-student">
+  <div class="modal">
+    <div class="modal-title">Add Student</div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Student Number</label>
+        <input class="form-input" id="new-student-number" placeholder="e.g. 12345678">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Full Name</label>
+        <input class="form-input" id="new-student-name" placeholder="Name Surname">
+      </div>
+    </div>
+    <div id="new-student-factors"></div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeModal('modal-add-student')">Cancel</button>
+      <button class="btn btn-primary" onclick="submitAddStudent()">Add Student</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-add-module">
+  <div class="modal">
+    <div class="modal-title">New Module</div>
+    <div class="form-group">
+      <label class="form-label">Module Name</label>
+      <input class="form-input" id="new-module-name" placeholder="e.g. Computer Science 301">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Factor Names (comma-separated)</label>
+      <input class="form-input" id="new-module-factors" placeholder="Semester Test, Class Tests, Assignments, Attendance">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Total Assessments per Factor (comma-separated)</label>
+      <input class="form-input" id="new-module-totals" placeholder="1, 4, 9, 12">
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeModal('modal-add-module')">Cancel</button>
+      <button class="btn btn-primary" onclick="submitAddModule()">Create Module</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-improvement">
+  <div class="modal" style="width:620px;">
+    <div class="modal-title">Improvement Plan · <span id="improve-student-name" style="color:var(--accent2);"></span></div>
+    <div style="display:flex;align-items:center;gap:16px;margin-bottom:16px;">
+      <div style="flex:1;">
+        <label class="form-label">Target Improvement (δ %)</label>
+        <div style="display:flex;align-items:center;gap:12px;">
+          <input type="range" min="1" max="20" value="5" id="delta-slider"
+                 oninput="document.getElementById('delta-val').textContent=this.value+'%'">
+          <span id="delta-val" style="font-family:'Syne',sans-serif;font-weight:700;color:var(--teal);min-width:35px;">5%</span>
+        </div>
+      </div>
+    </div>
+    <div id="remaining-inputs" style="margin-bottom:16px;"></div>
+    <button class="btn btn-teal" onclick="runImprovementPlan()">Generate Plan</button>
+    <div id="improvement-result" style="margin-top:20px;"></div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeModal('modal-improvement')">Close</button>
+    </div>
+  </div>
+</div>
+
+<div class="notif" id="notif"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script>
+const API = '';  // same origin
+let currentModuleId = 1;
+let currentModuleData = null;
+let psrData = null;
+let allStudentsData = [];
+let distChart = null, deaChart = null, factorChart = null;
+let activeStudentId = null;
+
+// ── Bootstrap ──
+async function init() {
+  await loadModules();
+  await loadPSR();
+}
+
+async function loadModules() {
+  const res = await fetch(`${API}/api/modules`);
+  const modules = await res.json();
+  const container = document.getElementById('sidebar-modules');
+  container.innerHTML = modules.map(m => `
+    <div class="module-chip ${m.id === currentModuleId ? 'active' : ''}"
+         onclick="switchModule(${m.id})">
+      <span class="dot"></span>${m.name}
+    </div>
+  `).join('');
+  if (modules.length > 0 && !currentModuleData) {
+    currentModuleData = modules[0];
+    document.getElementById('topbar-module-name').textContent = modules[0].name;
+  }
+}
+
+async function switchModule(id) {
+  currentModuleId = id;
+  psrData = null;
+  document.querySelectorAll('.module-chip').forEach(c => c.classList.remove('active'));
+  event.target.closest('.module-chip').classList.add('active');
+  const mod = await (await fetch(`${API}/api/modules/${id}`)).json();
+  currentModuleData = mod;
+  document.getElementById('topbar-module-name').textContent = mod.name;
+  await loadPSR();
+}
+
+// ── PSR Analysis ──
+async function loadPSR() {
+  try {
+    const res = await fetch(`${API}/api/modules/${currentModuleId}/psr`);
+    const data = await res.json();
+    psrData = data;
+    allStudentsData = data.students;
+    renderDashboard(data);
+    renderStudentTable(data.students);
+    renderDistChart(data.students);
+    renderDEAChart(data.students);
+    renderFactorChart(data.students);
+  } catch (e) {
+    document.getElementById('ranking-body').innerHTML =
+      `<tr><td colspan="7"><div class="empty-state"><h3>No data</h3><p>Add students to get started.</p></div></td></tr>`;
+  }
+}
+
+async function runAnalysis() {
+  showNotif('Running PSR analysis...', '');
+  await loadPSR();
+  showNotif('PSR analysis complete', 'success');
+}
+
+// ── Dashboard ──
+function renderDashboard(data) {
+  const s = data.statistics;
+  document.getElementById('stat-total').textContent = s.total_students;
+  document.getElementById('stat-avg').textContent = s.class_average + '%';
+  document.getElementById('stat-pass').textContent = s.pass_rate + '%';
+  document.getElementById('stat-risk').textContent = s.at_risk_count;
+
+  const tbody = document.getElementById('ranking-body');
+  tbody.innerHTML = data.students.map(s => `
+    <tr onclick="openStudentDetail(${s.id})">
+      <td><span class="rank-badge ${s.rank <= 3 ? 'rank-'+s.rank : 'rank-n'}">${s.rank}</span></td>
+      <td>
+        <div style="font-weight:500;">${s.name}</div>
+        <div style="font-size:11px;color:var(--text3);">Student ${s.id}</div>
+      </td>
+      <td style="font-family:'Syne',sans-serif;font-size:13px;color:var(--coral);">${s.min_pmark}%</td>
+      <td style="font-family:'Syne',sans-serif;font-size:13px;color:var(--teal);">${s.max_pmark}%</td>
+      <td>
+        <div style="font-family:'Syne',sans-serif;font-size:14px;font-weight:700;">${s.avg_pmark}%</div>
+        <div class="progress-track">
+          <div class="progress-fill" style="width:${s.avg_pmark}%;background:${getColor(s.avg_pmark)}"></div>
+        </div>
+      </td>
+      <td><span class="dea-chip dea-${Math.min(s.dea_class, 3)}">Class ${s.dea_class}</span></td>
+      <td><span class="tier tier-${getTier(s.avg_pmark)}">${getTierLabel(s.avg_pmark)}</span></td>
+    </tr>
+  `).join('');
+}
+
+function getColor(v) {
+  if (v >= 75) return 'var(--green)';
+  if (v >= 60) return 'var(--blue)';
+  if (v >= 50) return 'var(--accent)';
+  if (v >= 40) return 'var(--amber)';
+  return 'var(--coral)';
+}
+function getTier(v) {
+  if (v >= 75) return 'distinction';
+  if (v >= 60) return 'good';
+  if (v >= 50) return 'satisfactory';
+  if (v >= 40) return 'at_risk';
+  return 'critical';
+}
+function getTierLabel(v) {
+  if (v >= 75) return 'Distinction';
+  if (v >= 60) return 'Good';
+  if (v >= 50) return 'Satisfactory';
+  if (v >= 40) return 'At Risk';
+  return 'Critical';
+}
+
+// ── Distribution Chart ──
+function renderDistChart(students) {
+  const buckets = [0, 0, 0, 0, 0];
+  students.forEach(s => {
+    if (s.avg_pmark >= 75) buckets[4]++;
+    else if (s.avg_pmark >= 60) buckets[3]++;
+    else if (s.avg_pmark >= 50) buckets[2]++;
+    else if (s.avg_pmark >= 40) buckets[1]++;
+    else buckets[0]++;
+  });
+  const labels = ['Critical\n<40', 'At Risk\n40–49', 'Satisfactory\n50–59', 'Good\n60–74', 'Distinction\n75+'];
+  const colors = ['#ff6b6b', '#f59e0b', '#6c63ff', '#3b82f6', '#22c55e'];
+
+  if (distChart) distChart.destroy();
+  distChart = new Chart(document.getElementById('dist-chart'), {
+    type: 'doughnut',
+    data: {
+      labels,
+      datasets: [{ data: buckets, backgroundColor: colors, borderWidth: 0, spacing: 3 }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false }, tooltip: {
+        callbacks: { label: ctx => ` ${ctx.label.replace('\n',' ')}: ${ctx.parsed} students` }
+      }},
+      cutout: '65%'
+    }
+  });
+
+  const legend = document.getElementById('dist-legend');
+  legend.innerHTML = labels.map((l, i) => buckets[i] > 0 ? `
+    <span style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text2);">
+      <span style="width:8px;height:8px;border-radius:2px;background:${colors[i]};flex-shrink:0;"></span>
+      ${l.split('\n')[0]}: <b style="color:var(--text)">${buckets[i]}</b>
+    </span>
+  ` : '').join('');
+}
+
+// ── DEA Chart ──
+function renderDEAChart(students) {
+  const classMap = {};
+  students.forEach(s => {
+    classMap[s.dea_class] = (classMap[s.dea_class] || 0) + 1;
+  });
+  const classes = Object.keys(classMap).sort((a, b) => a - b);
+  const counts = classes.map(c => classMap[c]);
+
+  if (deaChart) deaChart.destroy();
+  deaChart = new Chart(document.getElementById('dea-chart'), {
+    type: 'bar',
+    data: {
+      labels: classes.map(c => `Class ${c}`),
+      datasets: [{
+        data: counts,
+        backgroundColor: classes.map((c, i) =>
+          i === 0 ? '#00d4aa' : i === 1 ? '#3b82f6' : i === 2 ? '#6c63ff' : '#374151'
+        ),
+        borderRadius: 6, borderSkipped: false
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false }, tooltip: {
+        callbacks: { label: ctx => ` ${ctx.parsed.y} students` }
+      }},
+      scales: {
+        x: { ticks: { color: '#555a6b', font: { size: 11 } }, grid: { display: false }, border: { display: false } },
+        y: { ticks: { color: '#555a6b', font: { size: 11 } }, grid: { color: 'rgba(255,255,255,0.04)' }, border: { display: false } }
+      }
+    }
+  });
+}
+
+// ── Factor Chart ──
+function renderFactorChart(students) {
+  if (!currentModuleData || !students.length) return;
+  const fn = currentModuleData.factor_names || ['F1', 'F2', 'F3', 'F4'];
+  const n = fn.length;
+  const avgs = Array(n).fill(0);
+  students.forEach(s => {
+    s.factor_averages.forEach((v, i) => avgs[i] += v);
+  });
+  const classAvgs = avgs.map(v => parseFloat((v / students.length).toFixed(1)));
+
+  if (factorChart) factorChart.destroy();
+  factorChart = new Chart(document.getElementById('factor-chart'), {
+    type: 'bar',
+    data: {
+      labels: fn,
+      datasets: [{
+        label: 'Class average',
+        data: classAvgs,
+        backgroundColor: '#6c63ff',
+        borderRadius: 8, borderSkipped: false
+      }]
+    },
+    options: {
+      indexAxis: 'y',
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false }, tooltip: {
+        callbacks: { label: ctx => ` Average: ${ctx.parsed.x}%` }
+      }},
+      scales: {
+        x: {
+          min: 0, max: 100,
+          ticks: { color: '#555a6b', font: { size: 11 }, callback: v => v + '%' },
+          grid: { color: 'rgba(255,255,255,0.04)' }, border: { display: false }
+        },
+        y: { ticks: { color: '#8b90a0', font: { size: 12 } }, grid: { display: false }, border: { display: false } }
+      }
+    }
+  });
+}
+
+// ── Student Table ──
+function renderStudentTable(students) {
+  const tbody = document.getElementById('student-table-body');
+  if (!tbody) return;
+  tbody.innerHTML = students.map(s => `
+    <tr onclick="openStudentDetail(${s.id})">
+      <td style="color:var(--text3);">${s.student_number || s.id}</td>
+      <td style="font-weight:500;">${s.name}</td>
+      ${s.factor_averages.map(v => `<td style="font-family:'Syne',sans-serif;font-size:12px;">${v.toFixed(1)}%</td>`).join('')}
+      <td>
+        <span style="font-family:'Syne',sans-serif;font-weight:700;font-size:14px;color:${getColor(s.avg_pmark)}">
+          ${s.avg_pmark}%
+        </span>
+      </td>
+      <td><span class="rank-badge ${s.rank <= 3 ? 'rank-'+s.rank : 'rank-n'}">${s.rank}</span></td>
+      <td>
+        <button class="btn btn-sm btn-teal" onclick="event.stopPropagation();openImprovementModal(${s.id},'${s.name}')">
+          Plan
+        </button>
+      </td>
+    </tr>
+  `).join('');
+}
+
+function filterStudents(q) {
+  if (!allStudentsData) return;
+  const filtered = allStudentsData.filter(s =>
+    s.name.toLowerCase().includes(q.toLowerCase()) ||
+    (s.student_number || '').includes(q)
+  );
+  renderStudentTable(filtered);
+}
+
+// ── Student Detail ──
+async function openStudentDetail(studentId) {
+  showPage('students');
+  activeStudentId = studentId;
+  const res = await fetch(`${API}/api/students/${studentId}/psr`);
+  const data = await res.json();
+  renderStudentDetail(data);
+  document.getElementById('student-list-view').style.display = 'none';
+  document.getElementById('student-detail-view').style.display = 'block';
+}
+
+function closeStudentDetail() {
+  document.getElementById('student-list-view').style.display = 'block';
+  document.getElementById('student-detail-view').style.display = 'none';
+  activeStudentId = null;
+}
+
+function renderStudentDetail(data) {
+  const { student, psr, module, total_students } = data;
+  const fn = module.factor_names;
+  const tierColors = {
+    distinction: 'var(--green)', good: 'var(--blue)',
+    satisfactory: 'var(--accent)', at_risk: 'var(--amber)', critical: 'var(--coral)'
+  };
+  const tc = tierColors[psr.tier] || 'var(--text)';
+
+  // Radar chart
+  const radarPoints = student.factor_averages.map((v, i) => ({
+    angle: (i / fn.length) * Math.PI * 2 - Math.PI / 2,
+    value: v / 100
+  }));
+
+  const content = `
+    <div style="display:grid;grid-template-columns:auto 1fr;gap:20px;align-items:start;margin-bottom:20px;">
+      <!-- Left: identity -->
+      <div class="card" style="width:220px;">
+        <div style="text-align:center;padding:8px 0 16px;">
+          <div style="width:64px;height:64px;border-radius:16px;background:${tc}22;border:2px solid ${tc}44;
+               display:flex;align-items:center;justify-content:center;margin:0 auto 12px;
+               font-family:'Syne',sans-serif;font-size:22px;font-weight:800;color:${tc}">
+            ${student.name.split(' ').map(n=>n[0]).join('').slice(0,2)}
+          </div>
+          <div style="font-family:'Syne',sans-serif;font-size:15px;font-weight:700;">${student.name}</div>
+          <div style="font-size:11px;color:var(--text3);margin-top:2px;">Rank ${psr.rank} of ${total_students}</div>
+          <div style="margin-top:10px;"><span class="tier tier-${psr.tier}">${getTierLabel(psr.avg_pmark)}</span></div>
+        </div>
+        <div style="border-top:1px solid var(--border);padding-top:14px;display:flex;flex-direction:column;gap:10px;">
+          <div style="display:flex;justify-content:space-between;font-size:12px;">
+            <span style="color:var(--text3);">Min p-mark</span>
+            <span style="font-family:'Syne',sans-serif;font-weight:700;color:var(--coral);">${psr.min_pmark}%</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;font-size:12px;">
+            <span style="color:var(--text3);">Avg p-mark</span>
+            <span style="font-family:'Syne',sans-serif;font-weight:700;color:${tc};">${psr.avg_pmark}%</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;font-size:12px;">
+            <span style="color:var(--text3);">Max p-mark</span>
+            <span style="font-family:'Syne',sans-serif;font-weight:700;color:var(--teal);">${psr.max_pmark}%</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;font-size:12px;">
+            <span style="color:var(--text3);">DEA Class</span>
+            <span class="dea-chip dea-${Math.min(psr.dea_class,3)}">Class ${psr.dea_class}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right: knowledge graph + factors -->
+      <div style="display:flex;flex-direction:column;gap:16px;">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+          <!-- Radar/KG -->
+          <div class="card">
+            <div class="card-header"><span class="card-title">Performance Profile</span></div>
+            <div class="radar-wrap">
+              <canvas id="student-radar" width="220" height="220"></canvas>
+            </div>
+          </div>
+          <!-- Factor bars -->
+          <div class="card">
+            <div class="card-header"><span class="card-title">Factor Breakdown</span></div>
+            <div class="factor-list">
+              ${fn.map((name, i) => {
+                const v = student.factor_averages[i] || 0;
+                return `
+                  <div class="factor-row">
+                    <div class="factor-meta">
+                      <span class="factor-name">${name}</span>
+                      <span class="factor-score" style="color:${getColor(v)}">${v.toFixed(1)}%</span>
+                    </div>
+                    <div class="progress-track">
+                      <div class="progress-fill" style="width:${v}%;background:${getColor(v)}"></div>
+                    </div>
+                  </div>
+                `;
+              }).join('')}
+            </div>
+          </div>
+        </div>
+
+        <!-- Weights -->
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">LP Weight Distribution</span>
+            <span style="font-size:11px;color:var(--text3);">Min / Max p-mark weights</span>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+            <div>
+              <div style="font-size:11px;color:var(--text3);margin-bottom:10px;">Weights for minimum p-mark</div>
+              <div class="weight-bars">
+                ${psr.weights_min.map((w, i) => `
+                  <div class="weight-bar-wrap">
+                    <div class="weight-bar-val">${(w*100).toFixed(0)}%</div>
+                    <div class="weight-bar-fill" style="height:${Math.max(w*180,4)}px;background:var(--coral);"></div>
+                    <div class="weight-bar-label">${fn[i] ? fn[i].split(' ')[0] : 'F'+(i+1)}</div>
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+            <div>
+              <div style="font-size:11px;color:var(--text3);margin-bottom:10px;">Weights for maximum p-mark</div>
+              <div class="weight-bars">
+                ${psr.weights_max.map((w, i) => `
+                  <div class="weight-bar-wrap">
+                    <div class="weight-bar-val">${(w*100).toFixed(0)}%</div>
+                    <div class="weight-bar-fill" style="height:${Math.max(w*180,4)}px;"></div>
+                    <div class="weight-bar-label">${fn[i] ? fn[i].split(' ')[0] : 'F'+(i+1)}</div>
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div style="display:flex;gap:12px;">
+      <button class="btn btn-teal" onclick="openImprovementModal(${student.id},'${student.name}')">
+        Generate Improvement Plan
+      </button>
+      <button class="btn" onclick="openEditScores(${student.id})">Edit Scores</button>
+    </div>
+  `;
+
+  document.getElementById('student-detail-content').innerHTML = content;
+
+  // Draw radar chart
+  requestAnimationFrame(() => drawRadar('student-radar', student.factor_averages, fn, tc));
+}
+
+function drawRadar(canvasId, values, labels, color) {
+  const canvas = document.getElementById(canvasId);
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const cx = canvas.width / 2, cy = canvas.height / 2;
+  const R = Math.min(cx, cy) - 28;
+  const n = values.length;
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  // Grid rings
+  [0.25, 0.5, 0.75, 1.0].forEach(r => {
+    ctx.beginPath();
+    for (let i = 0; i < n; i++) {
+      const a = (i / n) * Math.PI * 2 - Math.PI / 2;
+      const x = cx + Math.cos(a) * R * r;
+      const y = cy + Math.sin(a) * R * r;
+      i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+    }
+    ctx.closePath();
+    ctx.strokeStyle = 'rgba(255,255,255,0.06)';
+    ctx.lineWidth = 1;
+    ctx.stroke();
+  });
+
+  // Axes
+  for (let i = 0; i < n; i++) {
+    const a = (i / n) * Math.PI * 2 - Math.PI / 2;
+    ctx.beginPath();
+    ctx.moveTo(cx, cy);
+    ctx.lineTo(cx + Math.cos(a) * R, cy + Math.sin(a) * R);
+    ctx.strokeStyle = 'rgba(255,255,255,0.08)';
+    ctx.stroke();
+  }
+
+  // Data polygon
+  ctx.beginPath();
+  values.forEach((v, i) => {
+    const a = (i / n) * Math.PI * 2 - Math.PI / 2;
+    const r = (v / 100) * R;
+    const x = cx + Math.cos(a) * r, y = cy + Math.sin(a) * r;
+    i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+  });
+  ctx.closePath();
+  const c = color.replace('var(--', '').replace(')', '');
+  const hexMap = {
+    green: '#22c55e', blue: '#3b82f6', accent: '#6c63ff',
+    amber: '#f59e0b', coral: '#ff6b6b', teal: '#00d4aa', accent2: '#8b84ff'
+  };
+  const hex = hexMap[c] || '#6c63ff';
+  ctx.fillStyle = hex + '30';
+  ctx.fill();
+  ctx.strokeStyle = hex;
+  ctx.lineWidth = 2;
+  ctx.stroke();
+
+  // Dots + labels
+  values.forEach((v, i) => {
+    const a = (i / n) * Math.PI * 2 - Math.PI / 2;
+    const r = (v / 100) * R;
+    const x = cx + Math.cos(a) * r, y = cy + Math.sin(a) * r;
+    ctx.beginPath();
+    ctx.arc(x, y, 4, 0, Math.PI * 2);
+    ctx.fillStyle = hex;
+    ctx.fill();
+
+    const lx = cx + Math.cos(a) * (R + 18), ly = cy + Math.sin(a) * (R + 18);
+    ctx.fillStyle = '#8b90a0';
+    ctx.font = '10px DM Sans';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(labels[i] ? labels[i].split(' ')[0] : `F${i+1}`, lx, ly);
+  });
+}
+
+// ── Improvement Modal ──
+function openImprovementModal(studentId, name) {
+  activeStudentId = studentId;
+  document.getElementById('improve-student-name').textContent = name;
+  const module = currentModuleData;
+  if (!module) return;
+  const fn = module.factor_names;
+  document.getElementById('remaining-inputs').innerHTML = `
+    <div style="font-size:12px;color:var(--text2);margin-bottom:10px;">Remaining assessments per factor:</div>
+    <div style="display:grid;grid-template-columns:repeat(${Math.min(fn.length,4)},1fr);gap:10px;">
+      ${fn.map((name, i) => `
+        <div>
+          <label class="form-label">${name}</label>
+          <input class="form-input" id="remain-${i}" type="number" min="0"
+                 value="${module.total_assessments[i] || 2}" style="text-align:center;">
+        </div>
+      `).join('')}
+    </div>
+  `;
+  document.getElementById('modal-improvement').classList.add('open');
+}
+
+async function runImprovementPlan() {
+  const module = currentModuleData;
+  const fn = module.factor_names;
+  const remaining = fn.map((_, i) => parseInt(document.getElementById(`remain-${i}`).value) || 0);
+  const delta = parseFloat(document.getElementById('delta-slider').value);
+
+  const res = await fetch(`${API}/api/students/${activeStudentId}/improvement`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ remaining_assessments: remaining, delta })
+  });
+  const data = await res.json();
+  renderImprovementResult(data, fn);
+}
+
+function renderImprovementResult(data, fn) {
+  const plan = data.improvement_plan;
+  const container = document.getElementById('improvement-result');
+  if (!plan.scenarios.length) {
+    container.innerHTML = `<div style="text-align:center;padding:20px;color:var(--text3);">No feasible improvement scenarios found with current settings.</div>`;
+    return;
+  }
+
+  container.innerHTML = `
+    <div style="border-top:1px solid var(--border);padding-top:16px;">
+      <div style="display:flex;justify-content:space-between;margin-bottom:14px;">
+        <div style="font-size:12px;color:var(--text3);">Current min p-mark: <b style="color:var(--text)">${plan.current_min_pmark}%</b></div>
+        <div style="font-size:12px;color:var(--text3);">${plan.scenarios.length} viable scenarios</div>
+      </div>
+      <div style="max-height:300px;overflow-y:auto;padding-right:4px;">
+        ${plan.scenarios.map((s, idx) => {
+          const scores = s.required_scores;
+          const positive = s.pmark_change >= 0;
+          return `
+            <div class="scenario-card">
+              <div class="scenario-header">
+                <span class="scenario-title">Scenario ${idx + 1}</span>
+                <span class="scenario-delta ${positive ? '' : 'negative'}">${positive ? '+' : ''}${s.pmark_change}% p-mark</span>
+              </div>
+              <div class="scenario-factors">
+                ${fn.map((name, i) => scores[i] !== null && scores[i] !== undefined
+                  ? `<span class="factor-pill required">${name.split(' ')[0]}: ≥${scores[i]}%</span>`
+                  : `<span class="factor-pill">${name.split(' ')[0]}: no change</span>`
+                ).join('')}
+              </div>
+            </div>
+          `;
+        }).join('')}
+      </div>
+    </div>
+  `;
+}
+
+// ── Weight Selection (Algorithm 3) ──
+async function runWeightSelection() {
+  const target = parseFloat(document.getElementById('target-slider').value);
+  const res = await fetch(`${API}/api/modules/${currentModuleId}/weight-selection`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ target_average: target })
+  });
+  const data = await res.json();
+  renderWeightResult(data);
+}
+
+function renderWeightResult(data) {
+  const ws = data.weight_selection;
+  const fn = data.module.factor_names;
+  const container = document.getElementById('weight-bars');
+  container.innerHTML = ws.weights.map((w, i) => `
+    <div class="weight-bar-wrap">
+      <div class="weight-bar-val">${(w * 100).toFixed(1)}%</div>
+      <div class="weight-bar-fill" style="height:${Math.max(w * 220, 4)}px;"></div>
+      <div class="weight-bar-label">${fn[i] ? fn[i].split(' ')[0] : 'F'+(i+1)}</div>
+    </div>
+  `).join('');
+  document.getElementById('weight-achieved').innerHTML = `
+    Target: <b style="color:var(--accent2)">${ws.target_average}%</b> &nbsp;·&nbsp;
+    Achieved: <b style="color:var(--teal)">${ws.achieved_average}%</b> &nbsp;·&nbsp;
+    Deviation: <b style="color:${ws.deviation < 1 ? 'var(--green)' : 'var(--amber)'}">±${ws.deviation}%</b>
+  `;
+  document.getElementById('weight-result').style.display = 'block';
+}
+
+// ── Add Student ──
+function openAddStudent() {
+  const module = currentModuleData;
+  if (!module) { showNotif('Select a module first', 'error'); return; }
+  const fn = module.factor_names;
+  document.getElementById('new-student-factors').innerHTML = `
+    <div style="font-size:12px;color:var(--text2);margin-bottom:10px;">Factor Averages (%):</div>
+    <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:12px;">
+      ${fn.map((name, i) => `
+        <div class="form-group" style="margin:0">
+          <label class="form-label">${name}</label>
+          <input class="form-input" id="new-factor-${i}" type="number" min="0" max="100" step="0.01" placeholder="0–100">
+        </div>
+      `).join('')}
+    </div>
+  `;
+  document.getElementById('modal-add-student').classList.add('open');
+}
+
+async function submitAddStudent() {
+  const module = currentModuleData;
+  const fn = module.factor_names;
+  const num = document.getElementById('new-student-number').value.trim();
+  const name = document.getElementById('new-student-name').value.trim();
+  const avgs = fn.map((_, i) => parseFloat(document.getElementById(`new-factor-${i}`).value) || 0);
+  if (!num || !name) { showNotif('Fill in all fields', 'error'); return; }
+
+  await fetch(`${API}/api/modules/${currentModuleId}/students`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ student_number: num, name, factor_averages: avgs })
+  });
+  closeModal('modal-add-student');
+  showNotif('Student added', 'success');
+  await loadPSR();
+}
+
+// ── Add Module ──
+function openAddModule() {
+  document.getElementById('modal-add-module').classList.add('open');
+}
+
+async function submitAddModule() {
+  const name = document.getElementById('new-module-name').value.trim();
+  const factorsStr = document.getElementById('new-module-factors').value.trim();
+  const totalsStr = document.getElementById('new-module-totals').value.trim();
+  if (!name || !factorsStr || !totalsStr) { showNotif('Fill in all fields', 'error'); return; }
+  const factor_names = factorsStr.split(',').map(s => s.trim());
+  const total_assessments = totalsStr.split(',').map(s => parseInt(s.trim()) || 1);
+  const res = await fetch(`${API}/api/modules`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ name, factor_names, total_assessments })
+  });
+  const data = await res.json();
+  closeModal('modal-add-module');
+  showNotif('Module created', 'success');
+  currentModuleId = data.id;
+  await loadModules();
+}
+
+// ── Navigation ──
+function showPage(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('page-' + id).classList.add('active');
+  document.querySelector(`[data-page="${id}"]`).classList.add('active');
+  const titles = { dashboard: 'Dashboard', students: 'Students', lecturer: 'Lecturer Tools' };
+  document.getElementById('page-title').textContent = titles[id] || id;
+}
+
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+function showNotif(msg, type) {
+  const el = document.getElementById('notif');
+  el.textContent = msg;
+  el.className = `notif show ${type}`;
+  setTimeout(() => el.classList.remove('show'), 3000);
+}
+
+// Bootstrap
+init();
+</script>
+</body>
+</html>
